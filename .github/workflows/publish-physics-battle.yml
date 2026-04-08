@@ -2,7 +2,9 @@ name: Publish Physics Battle
 
 on:
   schedule:
-    - cron: '0 12 * * *'  # 毎日 UTC 12:00
+    - cron: '0 0 * * *'   # 毎日 UTC 00:00 (JST 09:00)
+    - cron: '0 8 * * *'   # 毎日 UTC 08:00 (JST 17:00)
+    - cron: '0 16 * * *'  # 毎日 UTC 16:00 (JST 01:00)
   workflow_dispatch:        # 手動実行も可能
 
 jobs:
