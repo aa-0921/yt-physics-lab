@@ -23,6 +23,7 @@ jobs:
         with:
           repository: aa-0921/physics-anim-core
           path: physics-anim-core
+          token: ${{ secrets.GH_PAT }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
