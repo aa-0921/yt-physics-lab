@@ -52,4 +52,15 @@ jobs:
           YT_PHYSICS_BATTLE_CLIENT_ID: ${{ secrets.YT_PHYSICS_BATTLE_CLIENT_ID }}
           YT_PHYSICS_BATTLE_CLIENT_SECRET: ${{ secrets.YT_PHYSICS_BATTLE_CLIENT_SECRET }}
           YT_PHYSICS_BATTLE_REFRESH_TOKEN: ${{ secrets.YT_PHYSICS_BATTLE_REFRESH_TOKEN }}
+          TT_PHYSICS_BATTLE_CLIENT_KEY: ${{ secrets.TT_PHYSICS_BATTLE_CLIENT_KEY }}
+          TT_PHYSICS_BATTLE_CLIENT_SECRET: ${{ secrets.TT_PHYSICS_BATTLE_CLIENT_SECRET }}
+          TT_PHYSICS_BATTLE_REFRESH_TOKEN: ${{ secrets.TT_PHYSICS_BATTLE_REFRESH_TOKEN }}
         run: python cli.py run physics-battle
+
+      - name: Persist battle history
+        working-directory: engine
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add channels/physics-battle/history.json
+          git diff --staged --quiet || (git commit -m "chore: update battle history" && git push)
