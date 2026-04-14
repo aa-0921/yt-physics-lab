@@ -1,0 +1,61 @@
+name: Publish Physics Compilation
+
+on:
+  schedule:
+    - cron: '0 4 * * *'    # 毎日 UTC 04:00 (JST 13:00)
+  workflow_dispatch:        # 手動実行も可能
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Check out engine
+        uses: actions/checkout@v4
+        with:
+          repository: aa-0921/youtube-auto-engine
+          path: engine
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Check out physics-anim-core
+        uses: actions/checkout@v4
+        with:
+          repository: aa-0921/physics-anim-core
+          path: physics-anim-core
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install system dependencies
+        run: sudo apt-get install -y ffmpeg
+
+      - name: Install dependencies
+        working-directory: engine
+        run: |
+          pip install -r requirements.txt
+          playwright install chromium --with-deps
+
+      - name: Start sketch server
+        run: |
+          python3 -m http.server 8080 --directory physics-anim-core/src &
+          sleep 2
+
+      - name: Run compilation pipeline
+        working-directory: engine
+        env:
+          YT_PHYSICS_BATTLE_CLIENT_ID: ${{ secrets.YT_PHYSICS_BATTLE_CLIENT_ID }}
+          YT_PHYSICS_BATTLE_CLIENT_SECRET: ${{ secrets.YT_PHYSICS_BATTLE_CLIENT_SECRET }}
+          YT_PHYSICS_BATTLE_REFRESH_TOKEN: ${{ secrets.YT_PHYSICS_BATTLE_REFRESH_TOKEN }}
+        run: python cli.py run physics-compilation
+
+      - name: Persist compilation history
+        working-directory: engine
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add channels/physics-compilation/history.json
+          git diff --staged --quiet || (git commit -m "chore: update compilation history" && git push)
